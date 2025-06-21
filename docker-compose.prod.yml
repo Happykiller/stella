@@ -1,0 +1,7 @@
+# docker-compose.prod.yml
+services:
+  db:
+    restart: always
+
+  adminer:
+    restart: always

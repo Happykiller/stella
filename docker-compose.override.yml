@@ -1,0 +1,9 @@
+# docker-compose.override.yml
+services:
+  db:
+    ports:
+      - "3306:3306"
+
+  adminer:
+    ports:
+      - "8081:8080"
