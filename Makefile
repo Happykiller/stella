@@ -3,6 +3,7 @@ CONTAINERS = stella stella_admin
 BASE_COMPOSE = docker-compose.yml
 DEV_COMPOSE = docker-compose.override.yml
 PROD_COMPOSE = docker-compose.prod.yml
+.DEFAULT_GOAL := help
 
 # === STARTUP ===
 
@@ -38,6 +39,16 @@ reset-all: ## 💣 Full cleanup (containers + volumes + networks)
 
 # === TOOLS ===
 
+check: ## ✅ Validate Compose configuration and local env file
+	@if [ ! -f .env ]; then \
+		echo "❌ .env file is missing"; \
+		echo "   Create it with: cp .env.template .env"; \
+		exit 1; \
+	fi
+	@echo "🔎 Validating Docker Compose configuration..."
+	@docker compose -f $(BASE_COMPOSE) -f $(DEV_COMPOSE) config > /dev/null
+	@echo "✅ Compose configuration is valid."
+
 status: ## 📦 Show container status
 	docker compose ps
 
@@ -49,7 +60,7 @@ envcheck: ## 🔎 Check the current environment variables
 		echo "❌ .env file is missing"; \
 	else \
 		echo "🧾 Loaded environment variables:"; \
-		cat .env | grep -vE '^\s*#' | grep -vE '^\s*$$'; \
+		sed -E '/^\s*#/d; /^\s*$$/d; s/^(([^=]*)(PASSWORD|SECRET|TOKEN|KEY)[^=]*)=.*/\1=****/' .env; \
 	fi
 
 install_network: ## 🌐 Create 'interservices' network if it doesn't exist
@@ -71,4 +82,4 @@ help: ## 📖 Show this help
 		| awk 'BEGIN {FS = ":.*?## "}; {printf " \033[33m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 
-.PHONY: start startall start_dev startall_dev down reset reset-all status logs envcheck install_network help
+.PHONY: start startall start_dev startall_dev down reset reset-all check status logs envcheck install_network help

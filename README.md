@@ -1,96 +1,74 @@
-# 🐳 Stella – Dockerized MariaDB + Adminer Stack
+# Stella: MariaDB + Adminer
 
-This project provides a lightweight Docker-based setup for local or production use of a MariaDB database with Adminer as a web interface.
+Lightweight Docker Compose stack for a local or server-hosted MariaDB instance with Adminer.
 
----
+## Requirements
 
-## 🚀 Quick Start
+- Docker Engine
+- Docker Compose v2+
+- `make`
 
-### 📦 Requirements
+## Setup
 
-- [Docker Engine](https://docs.docker.com/engine/install/)
-- [Docker Compose v2+](https://docs.docker.com/compose/)
-- `make` installed (Linux/macOS/WSL)
-
----
-
-### 🔧 Setup
-
-1. Copy the environment file:
+1. Create a local env file:
 
    ```bash
-   cp .env.example .env
-````
+   cp .env.template .env
+   ```
 
-2. (Optional) Edit `.env` to define your `MARIADB_ROOT_PASSWORD`.
-
-3. Create the shared Docker network if not already existing:
+2. Set a non-default `MARIADB_ROOT_PASSWORD` in `.env`.
+3. Create the shared Docker network:
 
    ```bash
    make install_network
    ```
 
----
+## Run
 
-### 💻 Run the Stack
-
-#### Development Mode (ports exposed)
+Development mode exposes MariaDB on `3306` and Adminer on `8081`:
 
 ```bash
-make start_dev         # Start without rebuilding
-make startall_dev      # Rebuild and start
+make start_dev
+make startall_dev
 ```
 
-Adminer will be available at: [http://localhost:8080](http://localhost:8080)
+Open Adminer at [http://localhost:8081](http://localhost:8081).
 
-#### Production Mode (no ports exposed)
+Production mode keeps the same services without host port bindings:
 
 ```bash
-make start             # Start without rebuilding
-make startall          # Rebuild and start
+make start
+make startall
 ```
 
----
-
-## 🛠️ Management Commands
+## Common Commands
 
 ```bash
-make status            # Show container status
-make logs              # View logs
-make down              # Stop containers
-make reset             # Stop and remove containers
-make reset-all         # Full cleanup (containers + volumes + networks)
-make envcheck          # Display loaded .env variables
+make              # Show helper
+make help         # List available targets
+make check        # Validate .env presence and Compose config
+make status       # Show container state
+make logs         # Follow service logs
+make envcheck     # Show loaded env keys with secrets masked
+make down         # Stop containers
+make reset        # Remove containers
+make reset-all    # Remove containers, volumes, and orphans
 ```
 
----
+## Structure
 
-## 🌐 Network
-
-All services are connected to a shared external Docker network:
-
-```bash
-docker network create interservices
-```
-
-This allows seamless communication across services and projects.
-
----
-
-## 📁 Folder Structure
-
-```
+```text
 .
-├── docker-compose.yml
-├── docker-compose.override.yml     # dev-specific (ports exposed)
-├── docker-compose.prod.yml         # prod-specific (no ports exposed)
-├── Makefile
-├── .env.example
-└── README.md
+├── docker-compose.yml           # base services and network
+├── docker-compose.override.yml  # development ports
+├── docker-compose.prod.yml      # production restart policy
+├── Makefile                     # local workflow entrypoint
+├── .env.template                # environment template
+└── AGENTS.md                    # contributor guide
 ```
 
----
+## Notes
 
-## 📄 License
-
-MIT – Use freely and adapt for your own needs.
+- MariaDB data is persisted in `./data/`.
+- Services join the external Docker network `interservices`.
+- `db` now exposes a health check used by Adminer startup ordering.
